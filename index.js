@@ -162,8 +162,8 @@ app.get('/bots', (req, res) => {
 	});
 });
 
-app.listen(3000, () => { 
-	console.log('listening on port 3000.');
+app.listen(process.env.PORT, () => { 
+	console.log(`listening on port ${process.env.PORT}.`);
 	client_credentials().then(response => {
 		clientCredentials = response.data;
 		lmvdzandebot = Bot(process.env.USERNAME, process.env.PASSWORD, true, [ ]);
