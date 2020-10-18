@@ -9,7 +9,7 @@ const db = require('./db.js');
 const Bot = require('./bot.js');
 // db.channels.put({ _id: 'lmvdzande', config: { bot: { connect: true }, prefix: '$' }});
 var lmvdzandebot;
-
+const REDIRECT_URI= !process.env.PRODUCTION ? "http://localhost:3000/" : 'https://lmvdzandebot.herokuapp.com/'
 app.use(bodyparser.json());
 
 app.use(express.static('public'));
@@ -20,7 +20,7 @@ const refresh = (token) => axios.post(`https://id.twitch.tv/oauth2/token?grant_t
 const client_credentials = () => axios.post(`https://id.twitch.tv/oauth2/token?client_id=${process.env.CLIENTID}&client_secret=${process.env.CLIENTSECRET}&grant_type=client_credentials`);
 const jwtKey = () => axios.get('https://id.twitch.tv/oauth2/keys');
 const oidc_implicit = (req, res) => {
-	res.redirect(`https://id.twitch.tv/oauth2/authorize?client_id=${process.env.CLIENTID}&redirect_uri=${process.env.REDIRECT_URI}&response_type=token%20id_token&scope=openid`);
+	res.redirect(`https://id.twitch.tv/oauth2/authorize?client_id=${process.env.CLIENTID}&redirect_uri=${REDIRECT_URI}&response_type=token%20id_token&scope=openid`);
 }
 let clientCredentials = null;
 
