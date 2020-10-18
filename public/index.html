@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://cdn.jsdelivr.net/npm/phaser@3.24.0/dist/phaser-arcade-physics.min.js"></script>
+    <script type="text/javascript" src="./assets/JS/FloatingNumbersPlugin.js"></script>
+</head>
+<body>
+	<div>
+		lmvdzandeBot
+	</div>
+	<br>
+	<div id="user"> </div>
+	<script type="text/javascript">
+		function removeHash () { 
+		    var scrollV, scrollH, loc = window.location;
+		    if ("pushState" in history)
+		        history.pushState("", document.title, loc.pathname + loc.search);
+		    else {
+		        // Prevent scrolling by storing the page's current scroll offset
+		        scrollV = document.body.scrollTop;
+		        scrollH = document.body.scrollLeft;
+
+		        loc.hash = "";
+
+		        // Restore the scroll offset, should be flicker free
+		        document.body.scrollTop = scrollV;
+		        document.body.scrollLeft = scrollH;
+		    }
+		}
+
+		async function postData(url = '', data = {}) {
+		  // Default options are marked with *
+		  const response = await fetch(url, {
+		    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+		    mode: 'cors', // no-cors, *cors, same-origin
+		    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+		    credentials: 'same-origin', // include, *same-origin, omit
+		    headers: {
+		      'Content-Type': 'application/json'
+		      // 'Content-Type': 'application/x-www-form-urlencoded',
+		    },
+		    redirect: 'follow', // manual, *follow, error
+		    referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+		    body: JSON.stringify(data) // body data type must match "Content-Type" header
+		  });
+		  return response.json(); // parses JSON response into native JavaScript objects
+		};
+
+		var hash = window.location.hash.substring(1);
+		var params = {};
+		hash.split('&').map(hk => { 
+	      let temp = hk.split('='); 
+	        params[temp[0]] = temp[1] 
+	    });
+	    if (params.access_token) {
+	    	window.localStorage.setItem('access_token', params.access_token);
+	    	removeHash();
+	    }
+	    fetch('/user', {
+    		method: "GET",
+    		headers: {
+    			Authorization: 'Bearer ' + window.localStorage.getItem('access_token')
+    		}
+    	}).then(response => response.json()).then(response => {
+    		window.document.getElementById('user').innerHTML = 'Logged in as: <br><br>' + Object.keys(response.data[0]).map(x => {
+    			return x + ": " + response.data[0][x] + "<br>"
+    		}).join("");
+    	}).catch(error => {
+    		window.location = window.location.origin + "/login";
+    	})
+	</script>
+</body>
+</html>
