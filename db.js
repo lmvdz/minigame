@@ -1,4 +1,4 @@
-const PouchDB = require("PouchDB");
+const PouchDB = require("pouchdb");
 module.exports = {
 	channels: new PouchDB('clients'),
 	duels: new PouchDB('duels'),
