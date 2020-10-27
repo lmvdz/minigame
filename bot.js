@@ -17,6 +17,7 @@ function BotOptions(channels, username, password, secure = true) {
     }
   }
 }
+
 // 3
 function Bot(username, password, secure, channels, connect = true) {
   // Create a client with our options
@@ -242,7 +243,7 @@ function Bot(username, password, secure, channels, connect = true) {
         this.client.say(channel, `Use '$bet ${duelId} <wager> <amount>'. <wager> is the person you're betting on.`);
       }
     },
-    nopermission( channel, { issuer, isModOrBroadcaster} ) {
+    nopermission( channel, { issuer, isModOrBroadcaster } ) {
       this.client.say(channel, `You don't have access to that command, @${issuer}`);
     }
   };
@@ -277,7 +278,7 @@ function Bot(username, password, secure, channels, connect = true) {
       this.functions.incrementPoints(context.username + channel).then((points) => {
         if (self) { return; } // Ignore bot
         // If the command is known, let's execute it
-        console.log(`executing command`, splitMessage);
+        console.log(channel + ` -- ` + splitMessage);
         if (isCommand) {
           if (command === 'roll' || command === 'help' || command === 'cc') {
             this.commands[command].bind(this)(
@@ -331,6 +332,8 @@ function Bot(username, password, secure, channels, connect = true) {
               },
               Array.isArray(commandArgs) && commandArgs.length > 0 ? commandArgs[0] !== undefined ? commandArgs[0] === 'help' : false : false
             )
+          } else {
+            this.commands[command].bind(this)(channel, { issuer: context.username, ...commandArgs });
           }
         }
       }).catch(error => console.error(error));
