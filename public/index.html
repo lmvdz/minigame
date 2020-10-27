@@ -8,7 +8,7 @@
     <!-- Link to the last version of BabylonJS loaders to enable loading filetypes such as .gltf -->
     <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <!-- Link to pep.js to ensure pointer events work consistently in all browsers -->
-    <script src="https://code.jquery.com/pep/0.4.1/pep.js"></script>
+    <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
     <script src="/assets/JS/post.js" type="text/javascript"></script>
     <script src="/assets/JS/removeHash.js" type="text/javascript"></script>
     <script src="/assets/JS/setupAccess.js" type="text/javascript"></script>
@@ -20,47 +20,47 @@
     		fetch('/validate', { method: "GET", headers: {
 		    	"Authorization": 'Bearer ' + window.localStorage.getItem('access_token')
 		    }}).then(function(response) { return response.json() }).then(function(response) {
-		    	var canvas = document.getElementById('renderCanvas');
-		        var engine = new BABYLON.Engine(canvas, true);
+		    	// var canvas = document.getElementById('renderCanvas');
+		        // var engine = new BABYLON.Engine(canvas, true);
 
-		        var createScene = function() {
-				    // Create a basic BJS Scene object.
-				    var scene = new BABYLON.Scene(engine);
+		        // var createScene = function() {
+				//     // Create a basic BJS Scene object.
+				//     var scene = new BABYLON.Scene(engine);
 
-				    // Create a FreeCamera, and set its position to (x:0, y:5, z:-10).
-				    var camera = new BABYLON.FlyCamera('camera', new BABYLON.Vector3(0, 5,-10), scene);
+				//     // Create a FreeCamera, and set its position to (x:0, y:5, z:-10).
+				//     var camera = new BABYLON.FlyCamera('camera', new BABYLON.Vector3(0, 5,-10), scene);
 
-				    // Target the camera to scene origin.
-				    camera.setTarget(BABYLON.Vector3.Zero());
+				//     // Target the camera to scene origin.
+				//     camera.setTarget(BABYLON.Vector3.Zero());
 
-				    // Attach the camera to the canvas.
-				    camera.attachControl(canvas, true);
+				//     // Attach the camera to the canvas.
+				//     camera.attachControl(canvas, true);
 
-				    // Create a basic light, aiming 0,1,0 - meaning, to the sky.
-				    var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0,1,0), scene);
+				//     // Create a basic light, aiming 0,1,0 - meaning, to the sky.
+				//     var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0,1,0), scene);
 
-				    // // Create a built-in "sphere" shape. 
-				    // var sphere = BABYLON.MeshBuilder.CreateSphere('sphere', {segments:16, diameter:2}, scene);
+				//     // // Create a built-in "sphere" shape. 
+				//     // var sphere = BABYLON.MeshBuilder.CreateSphere('sphere', {segments:16, diameter:2}, scene);
 
-				    // // Move the sphere upward 1/2 of its height.
-				    // sphere.position.y = 1;
+				//     // // Move the sphere upward 1/2 of its height.
+				//     // sphere.position.y = 1;
 
-				    // // Create a built-in "ground" shape.
-				    // var ground = BABYLON.MeshBuilder.CreateGround('ground1', {height:6, width:6, subdivisions: 2}, scene);
+				//     // // Create a built-in "ground" shape.
+				//     // var ground = BABYLON.MeshBuilder.CreateGround('ground1', {height:6, width:6, subdivisions: 2}, scene);
 
-				    var box1 = BABYLON.Mesh.CreateBox("Box1", 1.0, scene);
-					// var box1animation = BABYLON.Animation.CreateAndStartAnimation('boxscale', box1, 'scaling.x', 30, 120, 1.0, 1.5);
-				    // Return the created scene.
-				    return scene;
-				}
-				var scene = createScene();
+				//     var box1 = BABYLON.Mesh.CreateBox("Box1", 1.0, scene);
+				// 	// var box1animation = BABYLON.Animation.CreateAndStartAnimation('boxscale', box1, 'scaling.x', 30, 120, 1.0, 1.5);
+				//     // Return the created scene.
+				//     return scene;
+				// }
+				// var scene = createScene();
 
-				engine.runRenderLoop(function() {
-				    scene.render();
-				});
-				window.addEventListener('resize', function() {
-				    engine.resize();
-				});
+				// engine.runRenderLoop(function() {
+				//     scene.render();
+				// });
+				// window.addEventListener('resize', function() {
+				//     engine.resize();
+				// });
 		    }).catch(function(error) {
 		    	console.error(error);
 		    });
