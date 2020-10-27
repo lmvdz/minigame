@@ -23,6 +23,13 @@ function Bot(username, password, secure, channels, connect = true) {
   this.client = new tmi.client(BotOptions(channels, username, password, secure));
   // setup commands
   this.commands = {
+    coach(channel, { issuer, isModOrBroadcaster }, help = false) {
+      if (!help) {
+        this.client.say(channel, `Unfortunately ${issuer} is uncoachable.`);
+      } else {
+        this.client.say(channel, `$coach`);
+      }
+    },
     roll(channel, { issuer, isModOrBroadcaster }, help = false) {
       if (!help)
         this.client.say(channel, `/me rolled a ${this.functions.rollDice()}`);

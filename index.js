@@ -30,6 +30,15 @@ app.get('/', (req, res) => {
 	res.sendFile('index.html');
 });
 
+app.get('/validate', (req, res) => {
+	validate(req.header('Authorization')).then(response => {
+		res.status(200).send({ status: 'success' });
+	}).catch(error => {
+		res.status(401).send(error);
+	})
+});
+
+
 app.get('/user', (req, res) => {
 	validate(req.header('Authorization')).then(function(response) {
 		axios.get(`https://api.twitch.tv/helix/users`, {
