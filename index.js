@@ -26,6 +26,36 @@ const oidc_implicit = (req, res) => {
 }
 let clientCredentials = null;
 
+let timeouts = [];
+
+let recursiveTimeout = function (index, max, func, error, ...args) {
+	let helper = function (index, max, func, error, ...args) {
+		return new Promise(function (resolve, reject) {
+			if (index < max) {
+				setTimeout(function () {
+					func(...args)
+						.then(function (response) {
+							resolve(response);
+						})
+						.catch(function (error) {
+							resolve(helper(index + 1, max, func, error, ...args));
+						});
+				}, (Math.exp(index / max) * 1000));
+			} else {
+				reject("timeout");
+			}
+		});
+	};
+	return new Promise(function (resolve, reject) {
+		helper(index, max, func, null, ...args).then(function (response) {
+			resolve(response);
+		}).catch(function (error) {
+			reject(error);
+		})
+	});
+};
+
+
 app.get('/login', (req, res) => oidc_implicit(req, res));
 
 app.get('/', (req, res) => {
@@ -82,7 +112,7 @@ app.get('/bot/commands', (req, res) => {
 })
 
 app.get('/bot/:channel/status', (req, res) => {
-	validate(req.header('Authorization')).then(function(response) {
+	validate(req.header('Authorization')).then(function (response) {
 		if (req.params.channel !== undefined && req.params.channel !== null) {
 			if (lmvdzandebot.client.channels.map(channel => channel.substr(1)).includes(req.params.channel)) {
 				res.send(true);
@@ -92,11 +122,29 @@ app.get('/bot/:channel/status', (req, res) => {
 		} else {
 			res.send('invalid channel');
 		}
-	}).catch(function(error) {
+	}).catch(function (error) {
 		res.redirect('/login');
 		console.error(error);
 	});
-})
+});
+
+app.get('/bot/:channel/logs', (req, res) => {
+	validate(req.header('Authorization')).then(function (response) {
+		if (req.params.channel !== undefined && req.params.channel !== null && req.params.channel !== '') {
+			db.logs.get(req.params.channel).then(function (log) {
+				res.send(log);
+			}).catch(function (error) {
+				res.status(500).send({ message: 'failed to get data', path: req.path });
+				console.error(error);
+			})
+		} else {
+			res.send('invalid channel');
+		}
+	}).catch(function (error) {
+		res.redirect('/login');
+		console.error(error);
+	});
+});
 
 
 /*
@@ -106,29 +154,34 @@ app.get('/bot/:channel/status', (req, res) => {
 */
 app.post('/bot/:channel/connect', (req, res) => {
 	validate(req.header('Authorization')).then(function(response) {
-		if (req.params.channel !== undefined && req.params.channel !== null) {
-			if (!lmvdzandebot.client.channels.map(channel => channel.substr(1)).includes(req.params.channel)) {
-				db.channels.get(req.params.channel).then(function (channel) {
-					channel.config.bot.connect = true;
-					db.channels.put(channel).then(function (response) {
-						db.channels.allDocs({include_docs: true}).then(function(result) {
-							lmvdzandebot = Bot(process.env.USERNAME, process.env.PASSWORD, true, result.rows.filter(row => row.doc.config.bot.connect).map(row => row.doc._id));
-							res.send("connected");
-							console.log("reconnected bot with channel: " + req.params.channel);
-						}).catch(function(error) {
-							console.log('failed to reconnect bot with added channel: ' + req.params.channel);
+		if (req.params.channel !== undefined && req.params.channel !== null && req.params.channel !== '') {
+			if (!timeouts[req.path]) {
+				if (!lmvdzandebot.client.channels.map(channel => channel.substr(1)).includes(req.params.channel)) {
+					db.channels.get(req.params.channel).then(function (channel) {
+						channel.config.bot.connect = true;
+						db.channels.put(channel).then(function (channelPut) {
+							timeouts[req.path] = true;
+							recursiveTimeout(0, 7, lmvdzandebot.client.join.bind(lmvdzandebot.client), null, channelPut.id)
+								.then(function (res) {
+									res.send("connected");
+									console.log("reconnected bot with channel: " + req.params.channel);
+								})
+								.catch(function (error) {
+									res.send('failed to connect to channel.');
+								});
+						}).catch(function (error) {
+							res.status(500).send({ message: 'failed to put channel', path: req.path });
 							console.error(error);
+						}).then(function () {
+							timeouts[req.path] = false;
 						});
 					}).catch(function (error) {
-						res.send("failed to connect");
-            			console.error(error);
-					})
-				}).catch(function (error) {
-					res.send("failed to connect");
-					console.error(error);
-				})
-			} else {
-				res.send('already connected to that channel');
+						res.status(500).send({ message: 'failed to get channel', path: req.path });
+						console.error(error);
+					});
+				} else {
+					res.send('already connected to that channel');
+				}
 			}
 		} else {
 			res.send('invalid channel');
@@ -141,25 +194,33 @@ app.post('/bot/:channel/connect', (req, res) => {
 
 app.post('/bot/:channel/disconnect', (req, res) => {
 	validate(req.header('Authorization')).then(function(response) {
-		if (req.params.channel !== undefined && req.params.channel !== null) {
-			if (lmvdzandebot.client.channels.map(channel => channel.substr(1)).includes(req.params.channel)) {
-				db.channels.get(req.params.channel).then(function (channel) {
-					channel.config.bot.connect = false;
-					db.channels.put(channel).then(function (channelPut) {
-						db.channels.allDocs({include_docs: true}).then(function(result) {
-							lmvdzandebot = Bot(process.env.USERNAME, process.env.PASSWORD, true, result.rows.filter(row => row.doc.config.bot.connect).map(row => row.doc._id));
-							res.send("disconnected");
-							console.log('reconnected bot without channel: ' + req.params.channel);
-						}).catch(function(error) {
-							console.error('error while reconnecting bot after disconnecting channel: ' + req.params.channel);
-						});
+		if (req.params.channel !== undefined && req.params.channel !== null && req.params.channel !== '') {
+			if (!timeouts[req.path]) {
+				if (lmvdzandebot.client.channels.map(channel => channel.substr(1)).includes(req.params.channel)) {
+					db.channels.get(req.params.channel).then(function (channel) {
+						channel.config.bot.connect = false;
+						db.channels.put(channel).then(function (channelPut) {
+							timeouts[req.path] = true;
+							recursiveTimeout(0, 7, lmvdzandebot.client.part.bind(lmvdzandebot.client), null, channelPut.id).then(function (res) {
+								res.send("disconnected");
+								console.log("bot parted with channel: " + req.params.channel);
+							})
+							.catch(function (error) {
+								res.send('failed to disconnect from channel.');
+							}).then(function () {
+								timeouts[req.path] = false;
+							});
+						}).catch(function (error) {
+							res.status(500).send({ message: 'failed to put channel', path: req.path });
+							console.error(error);
+						})
 					}).catch(function (error) {
-						res.status(500).send(error);
+						res.status(500).send({ message: 'failed to get channel', path: req.path });
 						console.error(error);
 					})
-				})
-			} else {
-				res.send('not connected to that channel');
+				} else {
+					res.send('not connected to that channel');
+				}
 			}
 		} else {
 			res.send('invalid channel');

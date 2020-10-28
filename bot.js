@@ -150,10 +150,10 @@ function Bot(username, password, secure, channels, connect = true) {
             db.points.put(pointsDoc).then(putPoints =>{
               this.client.say(channel, `@${instigator} dueled themself and lost ${pointsLost} points. @${instigator} has ${pointsRemaining} points remaining.`);
             }).catch(error => {
-              console.log(error);
+              console.error(error);
             });
           }).catch(error => {
-            console.log(error);
+            console.error(error);
           });
         }
       } else {
@@ -278,8 +278,15 @@ function Bot(username, password, secure, channels, connect = true) {
       this.functions.incrementPoints(context.username + channel).then((points) => {
         if (self) { return; } // Ignore bot
         // If the command is known, let's execute it
-        console.log(channel + ` -- ` + splitMessage);
         if (isCommand) {
+          let messageToLog = context.username + " " + splitMessage;
+          db.logs.get(channel).then(function (log) {
+            log.commands.push(messageToLog);
+          }).catch(function (error) {
+            db.logs.put({ _id: channel, log: { commands: [messageToLog] } }).catch(function (error) {
+              console.error(error);
+            });
+          });
           if (command === 'roll' || command === 'help' || command === 'cc') {
             this.commands[command].bind(this)(
               channel, 

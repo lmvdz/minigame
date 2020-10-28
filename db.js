@@ -4,5 +4,6 @@ module.exports = {
 	duels: new PouchDB('duels'),
 	bets: new PouchDB('bets'),
 	points: new PouchDB('points'),
-	users: new PouchDB('users')
+	users: new PouchDB('users'),
+	logs: new PouchDB('logs')
 }

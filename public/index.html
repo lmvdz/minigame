@@ -28,8 +28,6 @@
 				<button @click="disconnectBot()">Disconnect Bot</button>
 				<span style="color: green;">Bot Connected</span>
 			</div>
-			<span v-if="connectBotResponse !== ''"> {{ connectBotResponse }}</span>
-			<span v-if="disconnectBotResponse !== ''"> {{ disconnectBotResponse }}</span>
 			<div v-if="botCommands.length > 0">
 				<h3>commands</h3>
 				<ul>
@@ -56,9 +54,7 @@
 				disconnectBot() {
 					let that = this;
 					return axios.post('/bot/' + this.twitchUserData.login + "/disconnect").then(function(response) {
-						that.disconnectBotResponse = response.data;
 						setTimeout(function() {
-							that.disconnectBotResponse = "";
 							that.botChannelStatus().then(function(response) {
 								that.botConnected = response.data;
 							}).catch(function(error) {
@@ -84,9 +80,7 @@
 				connectBot() {
 					let that = this;
 					return axios.post('/bot/' + this.twitchUserData.login + "/connect").then(function(response) {
-						that.connectBotResponse = response.data;
 						setTimeout(function() {
-							that.connectBotResponse = "";
 							that.botChannelStatus().then(function(response) {
 								that.botConnected = response.data;
 							}).catch(function(error) {
