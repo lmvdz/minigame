@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+	<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            var canvas = document.getElementById('renderCanvas');
+            var engine = new BABYLON.Engine(canvas, true);
+            // Create a scene.
+            var scene = new BABYLON.Scene(engine);
+
+            var light = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(1, 10, 1), scene);
+
+            // Create a FreeCamera, and set its position to (x:0, y:5, z:-10).
+            var camera = new BABYLON.FreeCamera('camera', new BABYLON.Vector3(5, 5, 0), scene);
+
+            // Attach the camera to the canvas.
+            camera.attachControl(canvas, false);
+
+            BABYLON.SceneLoader.ImportMesh(null, "/assets/GLTF/octane/", "scene.gltf", scene, function (meshes, particleSystems, skeletons) {
+                camera.target = meshes[0];
+            });
+
+            scene.registerBeforeRender(function () {
+                light.position = camera.position;
+            });
+
+            var time = 0;
+            engine.runRenderLoop(function() {
+
+                scene.render();
+            });
+
+            window.addEventListener('resize', function() {
+                engine.resize();
+            });
+        })
+    </script>
+</body>
+<style>
+    html, body {
+        overflow: hidden;
+        width   : 100%;
+        height  : 100%;
+        margin  : 0;
+        padding : 0;
+    }
+
+    #renderCanvas {
+        width   : 100%;
+        height  : 100%;
+        touch-action: none;
+    }
+</style>
+</html>

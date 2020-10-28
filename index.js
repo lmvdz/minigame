@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const bodyparser = require('body-parser');
 const axios = require('axios');
+const path = require('path');
 
 const db = require('./db.js');
 
@@ -14,7 +15,7 @@ const REDIRECT_URI =
     : "https://lmvdzandebot.herokuapp.com/";
 app.use(bodyparser.json());
 
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, "public")));
 
 const validate = (authorization) => axios.get('https://id.twitch.tv/oauth2/validate', { headers: { 'Authorization': authorization }});
 const revoke = (token) => axios.post(`https://id.twitch.tv/oauth2/revoke?client_id=${process.env.CLIENTID}&token=${token}`);
@@ -61,6 +62,10 @@ app.get('/login', (req, res) => oidc_implicit(req, res));
 app.get('/', (req, res) => {
 	res.sendFile('index.html');
 });
+
+app.get('/game', (req, res) => {
+	res.sendFile('game.html', { root: __dirname + '/public'});
+})
 
 app.get('/validate', (req, res) => {
 	validate(req.header('Authorization')).then(response => {
